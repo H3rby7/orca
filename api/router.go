@@ -1,21 +1,23 @@
-package main
+package api
 
 import (
 	"fmt"
+	"log"
 	"net/http"
+	"orca/group"
 
 	"github.com/gorilla/mux"
 )
 
-func main() {
+func SetUpRoutes() {
 	r := mux.NewRouter()
-	r.HandleFunc("/", HealthHandler)
-	GroupRoutes(r.PathPrefix("/group").Subrouter())
+	r.HandleFunc("/", healthHandler)
+	group.GroupRoutes(r.PathPrefix("/group").Subrouter())
 	http.Handle("/", r)
-	http.ListenAndServe(":8080", r)
+	log.Fatal(http.ListenAndServe(":8080", r))
 }
 
-func HealthHandler(w http.ResponseWriter, r *http.Request) {
+func healthHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, "API is up and running")
 }
