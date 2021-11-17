@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"orca/env"
 
 	"github.com/gorilla/mux"
 )
@@ -12,12 +13,11 @@ type ListOfGroups struct {
 	Groups []Group `json:"groups"`
 }
 
-type Group struct {
-	Id   int    `json:"id"`
-	Name string `json:"name"`
-}
+var model *GroupModel
 
-func GroupRoutes(s *mux.Router) {
+func Configure(s *mux.Router, env *env.Env) {
+	model = &GroupModel{DB: env.DB}
+	model.LoadFixtures()
 	s.Path("").Methods("GET").HandlerFunc(getAllHandler)
 	s.Path("").Methods("POST").HandlerFunc(createHandler)
 	s.HandleFunc("/module", moduleInfoHandler)
@@ -33,7 +33,11 @@ func getAllHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json")
 
-	jsonResponse, err := json.Marshal(stubGroups())
+	groups, err := model.All(r.Context())
+	if err != nil {
+		return
+	}
+	jsonResponse, err := json.Marshal(groups)
 	if err != nil {
 		return
 	}
@@ -45,13 +49,4 @@ func getAllHandler(w http.ResponseWriter, r *http.Request) {
 func moduleInfoHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, "Group module loaded")
-}
-
-func stubGroups() []Group {
-	var groups []Group
-	var g1 Group
-	g1.Id = 1
-	g1.Name = "all"
-	groups = append(groups, g1)
-	return groups
 }

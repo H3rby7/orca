@@ -1,0 +1,4 @@
+- model: Group
+  rows:
+    - _id: 1
+      name: all

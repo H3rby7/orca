@@ -4,15 +4,16 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"orca/env"
 	"orca/group"
 
 	"github.com/gorilla/mux"
 )
 
-func SetUpRoutes() {
+func SetUpRoutes(env *env.Env) {
 	r := mux.NewRouter()
 	r.HandleFunc("/", healthHandler)
-	group.GroupRoutes(r.PathPrefix("/group").Subrouter())
+	group.Configure(r.PathPrefix("/group").Subrouter(), env)
 	http.Handle("/", r)
 	log.Fatal(http.ListenAndServe(":8080", r))
 }
